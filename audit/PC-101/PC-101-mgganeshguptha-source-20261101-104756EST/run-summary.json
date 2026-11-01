@@ -1,0 +1,61 @@
+{
+  "feature": "PC-101",
+  "run_id": "41323025154",
+  "run_label": "PC-101-mgganeshguptha-source-20261101-104756EST",
+  "status": "halted",
+  "retain_audit_branch": true,
+  "completed_phases": [],
+  "total_tokens": {
+    "input": 0,
+    "output": 0,
+    "cache_read": 0,
+    "cache_write": 0,
+    "premium_cost": 0.0,
+    "nano_aiu": 0.0
+  },
+  "total_tokens_all_runs": {
+    "input": 0,
+    "output": 0,
+    "cache_read": 0,
+    "cache_write": 0,
+    "reasoning": 0
+  },
+  "phase_token_log": [
+    {
+      "phase": "repo_instructions",
+      "run_id": "41323025154",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 0,
+      "cumulative_tokens": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [],
+      "premium_cost": 0.0,
+      "nano_aiu": 0.0,
+      "cost_source": "session_metrics",
+      "models_used": [],
+      "model_breakdown": {}
+    }
+  ],
+  "actor": "mgganeshguptha-source",
+  "sdk_usage": {
+    "total_premium_cost": 0.0,
+    "total_nano_aiu": 0.0,
+    "model_usage": {},
+    "reported_by": "session_metrics"
+  },
+  "cost_source": {
+    "method": "sdk",
+    "is_estimate": false,
+    "basis": "Copilot SDK session.usage.getMetrics, one session per phase attempt, summed for the run; per-call assistant.usage events as fallback.",
+    "units": "premium-request cost (multipliers applied) and nano-AI units, as reported by the SDK. Not converted to AI credits or dollars: GitHub documents no conversion.",
+    "caveat": "SDK usage APIs are experimental in the pinned SDK version. Reconcile with the organization billing report before quoting a cost."
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "feature_id": "PC-101",
+  "story": "Title: Add a status to each visit in the Visit API\n\nStory: As a clinic receptionist, I want each visit to carry a status (scheduled, completed or cancelled), so that the front desk can see which visits still need to happen.\n\n**Requires a new or changed contract from:** None\n\nExpected behaviour:\n- A visit has a `status` with exactly one of three values: `SCHEDULED`, `COMPLETED`, `CANCELLED`.\n- The values are defined once, as an enum in `src/main/resources/openapi.yml` (a new schema, e.g. `VisitStatus`), and used by the visit schemas. This repo is contract-first: the DTOs and API interfaces are generated from `openapi.yml` at build time, so the YAML must be changed first and the hand-written code must match what it generates.\n- `status` is returned on every visit in every response that contains visits: `GET /api/visits`, `GET /api/visits/{visitId}`, and the visits nested inside pets and owners in both API versions (e.g. `GET /api/owners/{ownerId}`, `GET /api/v2/owners`, `GET /api/v2/pets`).\n- `status` is optional on create and update requests (`POST /api/visits`, `POST /api/owners/{ownerId}/pets/{petId}/visits`, `PUT /api/visits/{visitId}`):\n  - when it is absent on create, the visit is saved as `SCHEDULED`;\n  - when it is absent on update, the visit keeps its current status;\n  - when it is any other value (e.g. `DONE`, lower-case `completed`, empty string), the API returns HTTP 400 and nothing is saved.\n- The status is stored in the `visits` table in a new NOT NULL column `status` that defaults to `SCHEDULED`, so existing rows get `SCHEDULED`. Write the column definition in each database's own accepted syntax (HSQLDB needs `DEFAULT` before `NOT NULL`).\n\nAcceptance criteria:\n- AC1: `openapi.yml` defines an enum with exactly `SCHEDULED`, `COMPLETED`, `CANCELLED`, and the visit response schema includes `status` referencing it.\n- AC2: `GET /api/visits/{visitId}` for an existing seeded visit returns `\"status\": \"SCHEDULED\"`.\n- AC3: `POST /api/visits` without `status` returns 201 and the created visit has `\"status\": \"SCHEDULED\"`.\n- AC4: `POST /api/visits` with `\"status\": \"COMPLETED\"` returns 201 and a following `GET` of that visit returns `\"status\": \"COMPLETED\"`.\n- AC5: `PUT /api/visits/{visitId}` with `\"status\": \"CANCELLED\"` returns 204 and a following `GET` returns `\"status\": \"CANCELLED\"`; a `PUT` without `status` leaves the stored status unchanged.\n- AC6: `POST` or `PUT` with `\"status\": \"DONE\"` returns 400 and the visit is not created or changed.\n- AC7: `GET /api/owners/{ownerId}` and the `/api/v2/owners` and `/api/v2/pets` responses return `status` on every visit under each pet.\n- AC8: The status is saved and read correctly with every persistence profile the existing tests cover (JDBC on H2 and HSQLDB, JPA, Spring Data JPA): the existing `ClinicService*Tests` and the visit controller tests pass, with new tests for the cases above.\n- AC9: `./mvnw test` passes.\n- AC10 (CL-1): `\"status\": null` on create or update is treated as absent: create saves `SCHEDULED`; update leaves the stored status unchanged. No 400.\n- AC11 (CL-2): Only an invalid `status` value (e.g. `DONE`, `completed`, empty string) returns 400. Every other unreadable or malformed request body keeps its current response on all endpoints; this story adds no new 400 cases beyond `status`.\n\nIn scope:\n- `src/main/resources/openapi.yml` (enum + visit schemas).\n- `model/Visit.java` (new field, stored as the enum name), and a model enum for the status if needed.\n- `mapper/VisitMapper.java` only if MapStruct cannot map the field by name.\n- `repository/jdbc/` visit code (`JdbcVisitRepositoryImpl`, `JdbcVisitRowMapper`, `JdbcPetVisitExtractor`) so JDBC reads and writes the column.\n- `rest/controller/v1/VisitRestControllerV1.java`, `OwnerRestControllerV1.java` (add-visit endpoint) and the v2 controllers only as far as needed for the defaulting and keep-on-update rules.\n- `db/h2`, `db/hsqldb`, `db/mysql`, `db/postgres` `schema.sql` (new column). `data.sql` only where a visit insert has no column list (e.g. `db/hsqldb/data.sql`): add the column list so the rows still load and take the default. No other seed-data changes.\n- Tests under `src/test/java`.\n\nOut of scope: the Angular front end (story PC-102), security/roles, any change to pets, owners, vets or specialties beyond the nested visit `status`, Docker and Kubernetes files, the Postman tests.\n\nAttachments: none.",
+  "current_phase": "repo_instructions",
+  "status": "halted",
+  "story_path": "stories/PC-101.md",
+  "story_sha256": "4b8beb341b7f7a152b110b2e1544488cb04ce005a70f7cbf8dd1c721dfb8f96a",
+  "attachments": [],
+  "input_guard": {
+    "ok": true,
+    "confirm_no_phi": true,
+    "pii_scan": true,
+    "findings": 0,
+    "finding_types": [],
+    "attachments": 0,
+    "phase": "repo_instructions",
+    "actor": "mgganeshguptha-source"
+  },
+  "dependencies": {
+    "line": "none",
+    "repos": [],
+    "contracts": [],
+    "warnings": 0,
+    "ok": true
+  },
+  "contract_output": {},
+  "clarification_log": [],
+  "completed_phases": [],
+  "approvals": {},
+  "last_feedback": "\n  ============== SDK / INFRASTRUCTURE ERROR: HALTED ==============\n  Phase  : repo_instructions\n  Error  : sdk: Execution failed: CAPIError: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"\\\"thinking.type.enabled\\\" is not supported for this model. Use \\\"thinking.type.adaptive\\\" and \\\"output_config.effort\\\" to control thinking behavior.\"},\"request_id\":\"req_011CgcUGuG3QJRRYLpqTu6ij\"}\n  This is the harness's plumbing (auth, network, Copilot CLI), not\n  the story or the code. No phase will be retried.\n  Action : Read the '[diag] ERROR EVENT' / 'SDK exception' lines above for the cause.\n  Resume : feature_id=PC-101, resume=true, start_phase=repo_instructions\n  ================================================================\n",
+  "iterations": {
+    "__runs__:repo_instructions": 1,
+    "repo_instructions": 1
+  },
+  "validation_attempts": 0,
+  "coverage_attempts": 0,
+  "changed_main_files": [],
+  "halt_gate": "sdk_error",
+  "halt_detail": "sdk: Execution failed: CAPIError: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"\\\"thinking.type.enabled\\\" is not supported for this model. Use \\\"thinking.type.adaptive\\\" and \\\"output_config.effort\\\" to control thinking behavior.\"},\"request_id\":\"req_011CgcUGuG3QJRRYLpqTu6ij\"}",
+  "phase_durations": {
+    "repo_instructions": 4.7
+  },
+  "started_at": "2026-11-01T15:48:17Z",
+  "actor": "mgganeshguptha-source",
+  "credits_actual": null,
+  "denied_writes": [],
+  "last_validation_loopback": "",
+  "contract_snapshot": {},
+  "ac_attempts": 0,
+  "review_attempts": 0,
+  "scope_attempts": 0,
+  "total_tokens": {
+    "input": 0,
+    "output": 0,
+    "cache_read": 0,
+    "cache_write": 0,
+    "reasoning": 0
+  },
+  "phase_token_log": [
+    {
+      "phase": "repo_instructions",
+      "run_id": "41323025154",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 0,
+      "cumulative_tokens": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [],
+      "premium_cost": 0.0,
+      "nano_aiu": 0.0,
+      "cost_source": "session_metrics",
+      "models_used": [],
+      "model_breakdown": {}
+    }
+  ],
+  "phase_model_log": [
+    {
+      "phase": "repo_instructions",
+      "model": "claude-haiku-5.5"
+    }
+  ],
+  "phase_credit_log": [
+    {
+      "phase": "repo_instructions",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 0.0,
+      "nano_aiu": 0.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    }
+  ],
+  "total_premium_cost": 0.0,
+  "total_nano_aiu": 0.0,
+  "model_usage": {},
+  "cost_source": "session_metrics"
+}

@@ -1,0 +1,52 @@
+{
+  "phases": {
+    "repo_instructions": {
+      "recorded_at": "2026-11-01T15:48:18+00:00",
+      "instructions": [
+        {
+          "name": "copilot-output-naming.instructions.md",
+          "path": ".github/instructions/copilot-output-naming.instructions.md",
+          "bytes": 6301,
+          "sha256": "2f2c719b0b42f85f6387ebc0e904e68a12bae033ff78831d790d981f899d8b50"
+        },
+        {
+          "name": "hipaa-guardrails.instructions.md",
+          "path": ".github/instructions/hipaa-guardrails.instructions.md",
+          "bytes": 3345,
+          "sha256": "a320060dc1856b855072b1c12b23c9ca3237f5058dc78a80655d5098857eaec8"
+        },
+        {
+          "name": "logging-standards.instructions.md",
+          "path": ".github/instructions/logging-standards.instructions.md",
+          "bytes": 2794,
+          "sha256": "ce54507d0f0d95628d2085cb928eb648392528dd2cd53112f5f1ac544ac42cff"
+        },
+        {
+          "name": "prompt-injection-guardrails.instructions.md",
+          "path": ".github/instructions/prompt-injection-guardrails.instructions.md",
+          "bytes": 3869,
+          "sha256": "327ac5a63246dd037f9b7c328328f9402892c129bafc925b48f10e18d13732ff"
+        }
+      ],
+      "skills": [
+        {
+          "name": "SKILL.md",
+          "path": ".github/skills/build-copilot-instructions-backend/SKILL.md",
+          "bytes": 7404,
+          "sha256": "08d36c5e275eeea89010dc7f3aaabcc5713c1c6fad6001eb46501134f13813e3",
+          "skill": "build-copilot-instructions-backend"
+        }
+      ],
+      "assets": [
+        {
+          "name": "copilot-instructions-backend-template.md",
+          "path": ".github/skills/build-copilot-instructions-backend/assets/copilot-instructions-backend-template.md",
+          "bytes": 5213,
+          "sha256": "e43bd247b97b4feecfeca767fb448446f87dffa7c57c9466e89cee74df3176a1",
+          "for_skill": "build-copilot-instructions-backend"
+        }
+      ],
+      "knowledge": []
+    }
+  }
+}
