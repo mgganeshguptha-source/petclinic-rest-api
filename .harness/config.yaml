@@ -154,14 +154,14 @@ phase_models:
   # the file is reviewed in the harness PR. Pinned rather than "auto" so the
   # first-run output is reproducible.
   repo_instructions: "gpt-5.3-codex"
-  context: "claude-opus-4.8"        # clarification quality matters most here
+  context: "claude-sonnet-5.5"        # clarification quality matters most here
   coding: "gpt-5.3-codex"
-  validation: "claude-sonnet-5"     # judges each acceptance criterion — keep fixed
+  validation: "claude-sonnet-5.5"     # judges each acceptance criterion — keep fixed
 
 # The code_review model. SET HERE, not in phase_models. Should DIFFER from the
 # coding model so the reviewer is genuinely independent; a same-as-coding value
 # is allowed but the harness warns. Blank => falls back to phase_models/default.
-review_model: "claude-sonnet-5"
+review_model: "claude-sonnet-5.5"
 
 # On a review MISS (reviewer reports issues), which phase to loop back to.
 review_loopback_phase: "coding"
