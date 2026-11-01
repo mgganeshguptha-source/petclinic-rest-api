@@ -142,26 +142,22 @@ repo_stacks: ["backend"]
 # repo PAT. An unavailable model fails the first phase with
 # 'Model "<name>" is not available'.
 # The default model for every phase unless overridden below.
-# "auto" lets Copilot pick a model per task (billed at the chosen model's rate,
-# 10% discount on paid plans). Phases that need a consistent judge are pinned.
-model: "auto"
+# Cost choice (2026-11-01): the cheapest capable model by default, a stronger
+# one only for coding. claude-haiku-5.5 accepts images (needed for phases that
+# receive story attachments); its input price rises above 100K tokens per call.
+model: "claude-haiku-5.5"
 
 # Per-phase model overrides. Any phase omitted uses `model` above. Keys are phase
 # ids: repo_instructions, context, design, prompt_steps, coding, unit_testing,
 # validation, documentation. (code_review is set via review_model, NOT here.)
 phase_models:
-  # Runs once per repo (only when .github/copilot-instructions.md is missing);
-  # the file is reviewed in the harness PR. Pinned rather than "auto" so the
-  # first-run output is reproducible.
-  repo_instructions: "gpt-5.3-codex"
-  context: "claude-sonnet-5.5"        # clarification quality matters most here
-  coding: "gpt-5.3-codex"
-  validation: "claude-sonnet-5.5"     # judges each acceptance criterion — keep fixed
+  coding: "claude-sonnet-5.5"
 
 # The code_review model. SET HERE, not in phase_models. Should DIFFER from the
 # coding model so the reviewer is genuinely independent; a same-as-coding value
-# is allowed but the harness warns. Blank => falls back to phase_models/default.
-review_model: "claude-sonnet-5.5"
+# is allowed but the harness warns. Blank => falls back to phase_models/default
+# (here claude-haiku-5.5, which differs from coding).
+review_model: ""
 
 # On a review MISS (reviewer reports issues), which phase to loop back to.
 review_loopback_phase: "coding"
