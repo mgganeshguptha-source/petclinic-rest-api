@@ -38,6 +38,7 @@ import org.springframework.orm.ObjectRetrievalFailureException;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.PetType;
 import org.springframework.samples.petclinic.model.Visit;
+import org.springframework.samples.petclinic.model.VisitStatus;
 import org.springframework.samples.petclinic.repository.VisitRepository;
 import org.springframework.stereotype.Repository;
 
@@ -78,6 +79,7 @@ public class JdbcVisitRepositoryImpl implements VisitRepository {
             .addValue("id", visit.getId())
             .addValue("visit_date", visit.getDate())
             .addValue("description", visit.getDescription())
+            .addValue("status", visit.getStatus().name())
             .addValue("pet_id", visit.getPet().getId());
     }
 
@@ -91,7 +93,7 @@ public class JdbcVisitRepositoryImpl implements VisitRepository {
             new JdbcPetRowMapper());
 
         List<Visit> visits = this.namedParameterJdbcTemplate.query(
-            "SELECT id as visit_id, visit_date, description FROM visits WHERE pet_id=:id",
+            "SELECT id as visit_id, visit_date, description, status as visit_status FROM visits WHERE pet_id=:id",
             params, new JdbcVisitRowMapper());
 
         for (Visit visit : visits) {
@@ -108,7 +110,7 @@ public class JdbcVisitRepositoryImpl implements VisitRepository {
             Map<String, Object> params = new HashMap<>();
             params.put("id", id);
             visit = this.namedParameterJdbcTemplate.queryForObject(
-                "SELECT id as visit_id, visits.pet_id as pets_id, visit_date, description FROM visits WHERE id= :id",
+                "SELECT id as visit_id, visits.pet_id as pets_id, visit_date, description, status as visit_status FROM visits WHERE id= :id",
                 params,
                 new JdbcVisitRowMapperExt());
         } catch (EmptyResultDataAccessException ex) {
@@ -121,7 +123,7 @@ public class JdbcVisitRepositoryImpl implements VisitRepository {
     public Collection<Visit> findAll() throws DataAccessException {
         Map<String, Object> params = new HashMap<>();
         return this.namedParameterJdbcTemplate.query(
-            "SELECT visits.id as visit_id, pets.id as pets_id, visit_date, description FROM visits LEFT JOIN pets ON visits.pet_id = pets.id",
+            "SELECT visits.id as visit_id, pets.id as pets_id, visit_date, description, visits.status as visit_status FROM visits LEFT JOIN pets ON visits.pet_id = pets.id",
             params, new JdbcVisitRowMapperExt());
     }
 
@@ -132,7 +134,7 @@ public class JdbcVisitRepositoryImpl implements VisitRepository {
             visit.setId(newKey.intValue());
         } else {
             this.namedParameterJdbcTemplate.update(
-                "UPDATE visits SET visit_date=:visit_date, description=:description, pet_id=:pet_id WHERE id=:id ",
+                "UPDATE visits SET visit_date=:visit_date, description=:description, status=:status, pet_id=:pet_id WHERE id=:id ",
                 createVisitParameterSource(visit));
         }
     }
@@ -153,6 +155,7 @@ public class JdbcVisitRepositoryImpl implements VisitRepository {
             Date visitDate = rs.getDate("visit_date");
             visit.setDate(new java.sql.Date(visitDate.getTime()).toLocalDate());
             visit.setDescription(rs.getString("description"));
+            visit.setStatus(VisitStatus.valueOf(rs.getString("visit_status")));
             Map<String, Object> params = new HashMap<>();
             params.put("id", rs.getInt("pets_id"));
             JdbcPet pet = JdbcVisitRepositoryImpl.this.namedParameterJdbcTemplate.queryForObject(

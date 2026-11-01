@@ -28,6 +28,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.samples.petclinic.rest.dto.VisitStatusDto;
 import org.springframework.samples.petclinic.rest.controller.BindingErrorsResponse;
 import org.springframework.samples.petclinic.rest.dto.ValidationMessageDto;
 import org.springframework.validation.BindingResult;
@@ -105,6 +107,39 @@ public class ExceptionControllerAdvice {
         HttpStatus status = HttpStatus.NOT_FOUND;
         ProblemDetail detail = this.detailBuild(e, status, request.getRequestURL(), ERROR_DATA_INTEGRITY);
         return ResponseEntity.status(status).body(detail);
+    }
+
+    /**
+     * Handles unreadable request bodies. An invalid visit {@code status} value is a client error (400); any other
+     * unreadable body keeps the generic handling.
+     *
+     * @param e The {@link HttpMessageNotReadableException} to be handled
+     * @param request {@link HttpServletRequest} object referring to the current request.
+     * @return A {@link ResponseEntity} with a 400 status for an invalid visit status, otherwise the general response
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseBody
+    public ResponseEntity<ProblemDetail> handleHttpMessageNotReadableException(HttpMessageNotReadableException e, HttpServletRequest request) {
+        if (isInvalidVisitStatus(e)) {
+            logger.warn("Invalid visit status at {} {}", request.getMethod(), request.getRequestURI());
+            HttpStatus status = HttpStatus.BAD_REQUEST;
+            ProblemDetail detail = this.detailBuild(e, status, request.getRequestURL(), ERROR_INVALID_REQUEST);
+            return ResponseEntity.status(status).body(detail);
+        }
+        return handleGeneralException(e, request);
+    }
+
+    private boolean isInvalidVisitStatus(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            String message = t.getMessage();
+            if (message != null && message.contains(VisitStatusDto.class.getName())) {
+                return true;
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return false;
     }
 
     /**
