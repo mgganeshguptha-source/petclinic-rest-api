@@ -1,0 +1,741 @@
+{
+  "feature_id": "PC-101",
+  "story": "Title: Add a status to each visit in the Visit API\n\nStory: As a clinic receptionist, I want each visit to carry a status (scheduled, completed or cancelled), so that the front desk can see which visits still need to happen.\n\n**Requires a new or changed contract from:** None\n\nExpected behaviour:\n- A visit has a `status` with exactly one of three values: `SCHEDULED`, `COMPLETED`, `CANCELLED`.\n- The values are defined once, as an enum in `src/main/resources/openapi.yml` (a new schema, e.g. `VisitStatus`), and used by the visit schemas. This repo is contract-first: the DTOs and API interfaces are generated from `openapi.yml` at build time, so the YAML must be changed first and the hand-written code must match what it generates.\n- `status` is returned on every visit in every response that contains visits: `GET /api/visits`, `GET /api/visits/{visitId}`, and the visits nested inside pets and owners in both API versions (e.g. `GET /api/owners/{ownerId}`, `GET /api/v2/owners`, `GET /api/v2/pets`).\n- `status` is optional on create and update requests (`POST /api/visits`, `POST /api/owners/{ownerId}/pets/{petId}/visits`, `PUT /api/visits/{visitId}`):\n  - when it is absent on create, the visit is saved as `SCHEDULED`;\n  - when it is absent on update, the visit keeps its current status;\n  - when it is any other value (e.g. `DONE`, lower-case `completed`, empty string), the API returns HTTP 400 and nothing is saved.\n- The status is stored in the `visits` table in a new NOT NULL column `status` that defaults to `SCHEDULED`, so existing rows get `SCHEDULED`. Write the column definition in each database's own accepted syntax (HSQLDB needs `DEFAULT` before `NOT NULL`).\n\nAcceptance criteria:\n- AC1: `openapi.yml` defines an enum with exactly `SCHEDULED`, `COMPLETED`, `CANCELLED`, and the visit response schema includes `status` referencing it.\n- AC2: `GET /api/visits/{visitId}` for an existing seeded visit returns `\"status\": \"SCHEDULED\"`.\n- AC3: `POST /api/visits` without `status` returns 201 and the created visit has `\"status\": \"SCHEDULED\"`.\n- AC4: `POST /api/visits` with `\"status\": \"COMPLETED\"` returns 201 and a following `GET` of that visit returns `\"status\": \"COMPLETED\"`.\n- AC5: `PUT /api/visits/{visitId}` with `\"status\": \"CANCELLED\"` returns 204 and a following `GET` returns `\"status\": \"CANCELLED\"`; a `PUT` without `status` leaves the stored status unchanged.\n- AC6: `POST` or `PUT` with `\"status\": \"DONE\"` returns 400 and the visit is not created or changed.\n- AC7: `GET /api/owners/{ownerId}` and the `/api/v2/owners` and `/api/v2/pets` responses return `status` on every visit under each pet.\n- AC8: The status is saved and read correctly with every persistence profile the existing tests cover (JDBC on H2 and HSQLDB, JPA, Spring Data JPA): the existing `ClinicService*Tests` and the visit controller tests pass, with new tests for the cases above.\n- AC9: `./mvnw test` passes.\n- AC10 (CL-1): `\"status\": null` on create or update is treated as absent: create saves `SCHEDULED`; update leaves the stored status unchanged. No 400.\n- AC11 (CL-2): Only an invalid `status` value (e.g. `DONE`, `completed`, empty string) returns 400. Every other unreadable or malformed request body keeps its current response on all endpoints; this story adds no new 400 cases beyond `status`.\n\nIn scope:\n- `src/main/resources/openapi.yml` (enum + visit schemas).\n- `model/Visit.java` (new field, stored as the enum name), and a model enum for the status if needed.\n- `mapper/VisitMapper.java` only if MapStruct cannot map the field by name.\n- `repository/jdbc/` visit code (`JdbcVisitRepositoryImpl`, `JdbcVisitRowMapper`, `JdbcPetVisitExtractor`) so JDBC reads and writes the column.\n- `rest/controller/v1/VisitRestControllerV1.java`, `OwnerRestControllerV1.java` (add-visit endpoint) and the v2 controllers only as far as needed for the defaulting and keep-on-update rules.\n- `db/h2`, `db/hsqldb`, `db/mysql`, `db/postgres` `schema.sql` (new column). `data.sql` only where a visit insert has no column list (e.g. `db/hsqldb/data.sql`): add the column list so the rows still load and take the default. No other seed-data changes.\n- Tests under `src/test/java`.\n\nOut of scope: the Angular front end (story PC-102), security/roles, any change to pets, owners, vets or specialties beyond the nested visit `status`, Docker and Kubernetes files, the Postman tests.\n\nAttachments: none.",
+  "current_phase": "raise_pr",
+  "status": "done",
+  "story_path": "stories/PC-101.md",
+  "story_sha256": "4b8beb341b7f7a152b110b2e1544488cb04ce005a70f7cbf8dd1c721dfb8f96a",
+  "attachments": [],
+  "input_guard": {
+    "ok": true,
+    "confirm_no_phi": true,
+    "pii_scan": true,
+    "findings": 0,
+    "finding_types": [],
+    "attachments": 0,
+    "phase": "raise_pr",
+    "actor": "mgganeshguptha-source"
+  },
+  "dependencies": {
+    "line": "none",
+    "repos": [],
+    "contracts": [],
+    "warnings": 0,
+    "ok": true
+  },
+  "contract_output": {
+    "status": "published",
+    "files": [
+      "src/main/resources/openapi.yml"
+    ],
+    "skipped": [],
+    "summary": null,
+    "changed_contract_files": [
+      "src/main/resources/openapi.yml"
+    ],
+    "repo": "petclinic-rest-api",
+    "commit": "9f07f22b01049ae8796c53775df5163e956de270"
+  },
+  "clarification_log": [],
+  "completed_phases": [
+    "repo_instructions",
+    "context",
+    "design",
+    "prompt_steps",
+    "coding",
+    "code_review",
+    "unit_testing",
+    "validation",
+    "documentation",
+    "raise_pr"
+  ],
+  "approvals": {
+    "context": "approved",
+    "prompt_steps": "approved",
+    "coding": "approved",
+    "documentation": "approved"
+  },
+  "last_feedback": null,
+  "iterations": {
+    "__runs__:repo_instructions": 1,
+    "repo_instructions": 1,
+    "__runs__:context": 1,
+    "context": 1,
+    "__runs__:design": 1,
+    "__runs__:prompt_steps": 1,
+    "prompt_steps": 1,
+    "__runs__:coding": 2,
+    "coding": 1,
+    "__runs__:code_review": 2,
+    "code_review": 2,
+    "__runs__:unit_testing": 1,
+    "unit_testing": 1,
+    "__runs__:validation": 1,
+    "validation": 1,
+    "__runs__:documentation": 1,
+    "documentation": 1,
+    "__runs__:raise_pr": 1,
+    "raise_pr": 1
+  },
+  "validation_attempts": 0,
+  "coverage_attempts": 0,
+  "changed_main_files": [
+    "src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcVisitRowMapper.java",
+    "src/main/java/org/springframework/samples/petclinic/model/Visit.java",
+    "src/main/java/org/springframework/samples/petclinic/model/VisitStatus.java",
+    "src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcOwnerRepositoryImpl.java",
+    "src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcVisitRepositoryImpl.java",
+    "src/main/java/org/springframework/samples/petclinic/mapper/VisitMapper.java",
+    "src/main/java/org/springframework/samples/petclinic/rest/controller/v1/VisitRestControllerV1.java",
+    "src/main/java/org/springframework/samples/petclinic/rest/advice/ExceptionControllerAdvice.java"
+  ],
+  "halt_gate": null,
+  "halt_detail": "code_review: changes requested",
+  "phase_durations": {
+    "repo_instructions": 38.6,
+    "context": 38.3,
+    "prompt_steps": 106.1,
+    "coding": 100.4,
+    "code_review": 44.6,
+    "unit_testing": 34.6,
+    "validation": 60.3,
+    "documentation": 14.6,
+    "raise_pr": 12.8
+  },
+  "started_at": "2026-11-01T15:50:49Z",
+  "actor": "mgganeshguptha-source",
+  "credits_actual": null,
+  "denied_writes": [],
+  "last_validation_loopback": "",
+  "contract_snapshot": {},
+  "ac_attempts": 0,
+  "review_attempts": 1,
+  "scope_attempts": 0,
+  "total_tokens": {
+    "input": 4482132,
+    "output": 85714,
+    "cache_read": 3498127,
+    "cache_write": 983863,
+    "reasoning": 32490
+  },
+  "phase_token_log": [
+    {
+      "phase": "repo_instructions",
+      "run_id": "41323241837",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 369022,
+      "cumulative_tokens": 369022,
+      "input_tokens": 361056,
+      "output_tokens": 7966,
+      "cached_tokens": 300730,
+      "cache_write_tokens": 60310,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "glob",
+        "view",
+        "grep",
+        "create",
+        "edit"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 1453065000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 7,
+          "premium_cost": 1.0,
+          "nano_aiu": 1453065000.0,
+          "input": 361056,
+          "output": 7966,
+          "cache_read": 300730,
+          "reasoning": 1889
+        }
+      }
+    },
+    {
+      "phase": "context",
+      "run_id": "41323241837",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 359673,
+      "cumulative_tokens": 728695,
+      "input_tokens": 353968,
+      "output_tokens": 5705,
+      "cached_tokens": 239486,
+      "cache_write_tokens": 114470,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "grep",
+        "glob",
+        "bash",
+        "view",
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 2553869000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 5,
+          "premium_cost": 1.0,
+          "nano_aiu": 2553869000.0,
+          "input": 353968,
+          "output": 5705,
+          "cache_read": 239486,
+          "reasoning": 896
+        }
+      }
+    },
+    {
+      "phase": "prompt_steps",
+      "run_id": "41323241837",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 500134,
+      "cumulative_tokens": 1228829,
+      "input_tokens": 474945,
+      "output_tokens": 25189,
+      "cached_tokens": 363258,
+      "cache_write_tokens": 111673,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "bash",
+        "glob",
+        "grep",
+        "view",
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 3018760500.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 6,
+          "premium_cost": 1.0,
+          "nano_aiu": 3018760500.0,
+          "input": 474945,
+          "output": 25189,
+          "cache_read": 363258,
+          "reasoning": 9685
+        }
+      }
+    },
+    {
+      "phase": "coding",
+      "run_id": "41323241837",
+      "model": "claude-sonnet-5.5",
+      "phase_tokens": 1322277,
+      "cumulative_tokens": 2551106,
+      "input_tokens": 1307532,
+      "output_tokens": 14745,
+      "cached_tokens": 1204939,
+      "cache_write_tokens": 102561,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "bash",
+        "view",
+        "grep",
+        "create",
+        "edit"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 52441040000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-sonnet-5.5"
+      ],
+      "model_breakdown": {
+        "claude-sonnet-5.5": {
+          "requests": 15,
+          "premium_cost": 1.0,
+          "nano_aiu": 52441040000.0,
+          "input": 1307532,
+          "output": 14745,
+          "cache_read": 1204939,
+          "reasoning": 3495
+        }
+      }
+    },
+    {
+      "phase": "code_review",
+      "run_id": "41323241837",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 258414,
+      "cumulative_tokens": 2809520,
+      "input_tokens": 253913,
+      "output_tokens": 4501,
+      "cached_tokens": 136416,
+      "cache_write_tokens": 117491,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 9150817500.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 2,
+          "premium_cost": 1.0,
+          "nano_aiu": 9150817500.0,
+          "input": 253913,
+          "output": 4501,
+          "cache_read": 136416,
+          "reasoning": 3260
+        }
+      }
+    },
+    {
+      "phase": "coding",
+      "run_id": "41323241837",
+      "model": "claude-sonnet-5.5",
+      "phase_tokens": 199582,
+      "cumulative_tokens": 3009102,
+      "input_tokens": 199077,
+      "output_tokens": 505,
+      "cached_tokens": 143891,
+      "cache_write_tokens": 55178,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "grep",
+        "edit"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 15740010000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-sonnet-5.5"
+      ],
+      "model_breakdown": {
+        "claude-sonnet-5.5": {
+          "requests": 3,
+          "premium_cost": 1.0,
+          "nano_aiu": 15740010000.0,
+          "input": 199077,
+          "output": 505,
+          "cache_read": 143891,
+          "reasoning": 0
+        }
+      }
+    },
+    {
+      "phase": "code_review",
+      "run_id": "41323241837",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 259778,
+      "cumulative_tokens": 3268880,
+      "input_tokens": 255481,
+      "output_tokens": 4297,
+      "cached_tokens": 137287,
+      "cache_write_tokens": 118188,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 9147735000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 2,
+          "premium_cost": 1.0,
+          "nano_aiu": 9147735000.0,
+          "input": 255481,
+          "output": 4297,
+          "cache_read": 137287,
+          "reasoning": 3381
+        }
+      }
+    },
+    {
+      "phase": "unit_testing",
+      "run_id": "41323241837",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 296440,
+      "cumulative_tokens": 3565320,
+      "input_tokens": 289304,
+      "output_tokens": 7136,
+      "cached_tokens": 160556,
+      "cache_write_tokens": 128740,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "create",
+        "bash"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 9651024000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 3,
+          "premium_cost": 1.0,
+          "nano_aiu": 9651024000.0,
+          "input": 289304,
+          "output": 7136,
+          "cache_read": 160556,
+          "reasoning": 3662
+        }
+      }
+    },
+    {
+      "phase": "validation",
+      "run_id": "41323241837",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 777943,
+      "cumulative_tokens": 4343263,
+      "input_tokens": 768004,
+      "output_tokens": 9939,
+      "cached_tokens": 660666,
+      "cache_write_tokens": 107312,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "bash",
+        "grep",
+        "glob",
+        "view",
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 2499276000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 12,
+          "premium_cost": 1.0,
+          "nano_aiu": 2499276000.0,
+          "input": 768004,
+          "output": 9939,
+          "cache_read": 660666,
+          "reasoning": 4923
+        }
+      }
+    },
+    {
+      "phase": "documentation",
+      "run_id": "41323241837",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 94168,
+      "cumulative_tokens": 4437431,
+      "input_tokens": 90863,
+      "output_tokens": 3305,
+      "cached_tokens": 55437,
+      "cache_write_tokens": 35420,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 663497000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 2,
+          "premium_cost": 1.0,
+          "nano_aiu": 663497000.0,
+          "input": 90863,
+          "output": 3305,
+          "cache_read": 55437,
+          "reasoning": 959
+        }
+      }
+    },
+    {
+      "phase": "raise_pr",
+      "run_id": "41323241837",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 130415,
+      "cumulative_tokens": 4567846,
+      "input_tokens": 127989,
+      "output_tokens": 2426,
+      "cached_tokens": 95461,
+      "cache_write_tokens": 32520,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "bash",
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 623341000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 3,
+          "premium_cost": 1.0,
+          "nano_aiu": 623341000.0,
+          "input": 127989,
+          "output": 2426,
+          "cache_read": 95461,
+          "reasoning": 340
+        }
+      }
+    }
+  ],
+  "phase_model_log": [
+    {
+      "phase": "repo_instructions",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "context",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "prompt_steps",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "coding",
+      "model": "claude-sonnet-5.5"
+    },
+    {
+      "phase": "code_review",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "coding",
+      "model": "claude-sonnet-5.5"
+    },
+    {
+      "phase": "code_review",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "unit_testing",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "validation",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "documentation",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "raise_pr",
+      "model": "claude-haiku-5.5"
+    }
+  ],
+  "phase_credit_log": [
+    {
+      "phase": "repo_instructions",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 1453065000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "context",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 2553869000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "prompt_steps",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 3018760500.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "coding",
+      "model": "claude-sonnet-5.5",
+      "configured_model": "claude-sonnet-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 52441040000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "code_review",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 9150817500.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "coding",
+      "model": "claude-sonnet-5.5",
+      "configured_model": "claude-sonnet-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 15740010000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "code_review",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 9147735000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "unit_testing",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 9651024000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "validation",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 2499276000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "documentation",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 663497000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "raise_pr",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 623341000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    }
+  ],
+  "total_premium_cost": 11.0,
+  "total_nano_aiu": 106942435000.0,
+  "model_usage": {
+    "claude-haiku-5.5": {
+      "requests": 42,
+      "input": 2975523,
+      "output": 70464,
+      "premium_cost": 9.0,
+      "nano_aiu": 38761385000.0
+    },
+    "claude-sonnet-5.5": {
+      "requests": 18,
+      "input": 1506609,
+      "output": 15250,
+      "premium_cost": 2.0,
+      "nano_aiu": 68181050000.0
+    }
+  },
+  "cost_source": "session_metrics"
+}

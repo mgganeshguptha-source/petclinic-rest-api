@@ -1,0 +1,14 @@
+{
+  "repo": "petclinic-rest-api",
+  "feature_id": "PC-101",
+  "run_id": "41323241837",
+  "commit": "9f07f22b01049ae8796c53775df5163e956de270",
+  "base": "story/PC-101",
+  "generated_at": "2026-11-01T15:59:11Z",
+  "files": [
+    "src/main/resources/openapi.yml"
+  ],
+  "changed_contract_files": [
+    "src/main/resources/openapi.yml"
+  ]
+}
