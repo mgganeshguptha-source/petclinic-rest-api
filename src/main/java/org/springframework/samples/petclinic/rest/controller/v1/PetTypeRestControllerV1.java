@@ -48,6 +48,10 @@ public class PetTypeRestControllerV1 implements PettypesApi {
         this.petTypeMapper = petTypeMapper;
     }
 
+    private static String trimName(String name) {
+        return name == null ? null : name.trim();
+    }
+
     @PreAuthorize("hasAnyRole(@roles.OWNER_ADMIN, @roles.VET_ADMIN)")
     @Override
     public ResponseEntity<List<PetTypeDto>> listPetTypes() {
@@ -72,6 +76,7 @@ public class PetTypeRestControllerV1 implements PettypesApi {
     @Override
     public ResponseEntity<PetTypeDto> addPetType(PetTypeFieldsDto petTypeFieldsDto) {
         HttpHeaders headers = new HttpHeaders();
+        petTypeFieldsDto.setName(trimName(petTypeFieldsDto.getName()));
         final PetType type = petTypeMapper.toPetType(petTypeFieldsDto);
         this.clinicService.savePetType(type);
         headers.setLocation(UriComponentsBuilder.newInstance().path("/api/pettypes/{id}").buildAndExpand(type.getId()).toUri());
@@ -85,7 +90,7 @@ public class PetTypeRestControllerV1 implements PettypesApi {
         if (currentPetType == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        currentPetType.setName(petTypeDto.getName());
+        currentPetType.setName(trimName(petTypeDto.getName()));
         this.clinicService.savePetType(currentPetType);
         return new ResponseEntity<>(petTypeMapper.toPetTypeDto(currentPetType), HttpStatus.NO_CONTENT);
     }
