@@ -7,9 +7,8 @@
 # annotated with: what it controls, the effect of the value, and the other
 # values it accepts.
 #
-# BACKEND version (Java / Spring Boot, Maven) — petclinic-rest-api personal test
-# repo. Single-module Maven, contract-first (openapi-generator builds the DTOs and
-# API interfaces from src/main/resources/openapi.yml at generate-sources).
+# BACKEND version (Java / Spring Boot, Maven). Copy to the service repo as
+# .harness/config.yaml. The frontend version is config-frontend.yaml.
 # Fields that a different stack must change are marked "STACK-SPECIFIC".
 # =============================================================================
 
@@ -27,7 +26,24 @@ target_module: ""
 # The command the harness runs to execute unit tests. The HARNESS runs this, not
 # the agent. A non-zero exit fails the validation gate and halts/loops the run.
 # STACK-SPECIFIC: Maven "./mvnw test", Gradle "./gradlew test", npm "npm test".
-test_command: "./mvnw -B -e test"
+test_command: "mvn -U -T 1C -s $MAVEN_SETTINGS -e test"
+
+# Whether the harness builds and tests the code itself (the build gate after
+# unit_testing, coverage and their loopbacks). false = the runner cannot build
+# this repo; the developer builds and tests locally before approving the PR.
+# This value wins over the caller workflow's old runs_build input.
+# true also turns on the baseline build check: before the first AI phase the
+# harness runs test_command once on the untouched base code. A base that does
+# not build halts there; tests that already fail are recorded and ignored at
+# the build gate (Maven). The result is reused until the base branch, the
+# library store or test_command changes.
+#
+# true also turns on the compile check: the harness compiles the production
+# code right after coding, before code review. Blank compile_command => derived
+# from a plain Maven test_command (the goal becomes `compile`); for any other
+# build the check is skipped unless compile_command is set. "off" disables it.
+runs_build: true
+compile_command: ""
 
 # Narrow the test run to a subset. Blank => run the whole suite.
 # Maven example: "-Dtest=OwnerServiceTest". Leave blank unless runs are slow.
@@ -43,7 +59,7 @@ pre_validation_command: ""
 # ----------------------------------------------------------------- coverage gate
 # Minimum line coverage on the CHANGED classes, as a fraction (0.90 = 90%).
 # 0 (or 0.0) => coverage gate disabled entirely.
-min_coverage: 0.80
+min_coverage: 0.90
 
 # What the coverage figure is measured over:
 #   "changed" => only the classes the coding phase wrote this run
@@ -71,7 +87,7 @@ coverage_csv: "target/site/jacoco/jacoco.csv"
 # If no report is produced the run halts as an ENVIRONMENT FAILURE and logs
 # this command's output — new tests cannot fix a missing report.
 # Single-module repo: "mvn -s $MAVEN_SETTINGS jacoco:report" is enough.
-coverage_command: "./mvnw -B jacoco:report"   # single module; pom declares jacoco (0.8.15)
+coverage_command: "mvn -s $MAVEN_SETTINGS test-compile org.jacoco:jacoco-maven-plugin:0.8.12:report"
 
 # On a coverage MISS (tests pass but coverage below the bar), which phase to loop
 # back to. Coverage is a test problem, so this is unit_testing.
@@ -94,7 +110,6 @@ max_validation_retries: 2
 # added automatically; list here only EXTRA patterns to protect.
 write_exclude:
   - "**/generated/**"        # generated sources
-  - "target/**"              # build output, incl. target/generated-sources/openapi (DTOs, API interfaces)
   - "**/*MapperImpl.java"    # MapStruct-generated mapper implementations
 
 
@@ -142,22 +157,25 @@ repo_stacks: ["backend"]
 # repo PAT. An unavailable model fails the first phase with
 # 'Model "<name>" is not available'.
 # The default model for every phase unless overridden below.
-# Cost choice (2026-11-01): the cheapest capable model by default, a stronger
-# one only for coding. claude-haiku-5.5 accepts images (needed for phases that
-# receive story attachments); its input price rises above 100K tokens per call.
+# "auto" lets Copilot pick a model per task (billed at the chosen model's rate,
+# 10% discount on paid plans). Phases that need a consistent judge are pinned.
 model: "claude-haiku-5.5"
 
 # Per-phase model overrides. Any phase omitted uses `model` above. Keys are phase
 # ids: repo_instructions, context, design, prompt_steps, coding, unit_testing,
 # validation, documentation. (code_review is set via review_model, NOT here.)
 phase_models:
-  coding: "claude-sonnet-5.5"
+  # Runs once per repo (only when .github/copilot-instructions.md is missing);
+  # the file is reviewed in the harness PR. Pinned rather than "auto" so the
+  # first-run output is reproducible.
+  context: "gpt-6-luna"        # clarification quality matters most here
+  coding: "gpt-6-luna"
+  validation: "claude-sonnet-5"     # judges each acceptance criterion — keep fixed
 
 # The code_review model. SET HERE, not in phase_models. Should DIFFER from the
 # coding model so the reviewer is genuinely independent; a same-as-coding value
-# is allowed but the harness warns. Blank => falls back to phase_models/default
-# (here claude-haiku-5.5, which differs from coding).
-review_model: ""
+# is allowed but the harness warns. Blank => falls back to phase_models/default.
+review_model: "claude-haiku-5.5"
 
 # On a review MISS (reviewer reports issues), which phase to loop back to.
 review_loopback_phase: "coding"
@@ -229,9 +247,9 @@ phase_skills:
   context:       ["build-context", "analyze-service"]
   prompt_steps:  ["build-prompt-steps"]
   design:        ["build-design"]
-  coding:        ["security-review-backend"]
-  code_review:   ["security-review-backend"]
-  unit_testing:  ["generate-unit-tests"]
+  coding:        ["security-review-backend", "security-review-angular"]   # per-stack; skill_stacks keeps this repo\'s
+  code_review:   ["security-review-backend", "security-review-angular"]
+  unit_testing:  []
   validation:    ["build-validation"]
   documentation: ["build-contract"]   # contract hand-off for the next story
   raise_pr:      []
@@ -375,4 +393,3 @@ contract_files: []
 # <service>-openapi-code/src/main/resources/<service>.yml). The coding phase may
 # edit these files even inside the excluded -openapi-code module. [] = none.
 # api_spec_files: ["mex-coverage-service-openapi-code/src/main/resources/mex-coverage-service.yml"]
-api_spec_files: ["src/main/resources/openapi.yml"]
