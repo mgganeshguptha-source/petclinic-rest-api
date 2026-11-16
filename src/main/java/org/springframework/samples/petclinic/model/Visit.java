@@ -48,6 +48,10 @@ public class Visit extends BaseEntity {
     @JoinColumn(name = "pet_id")
     private Pet pet;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private VisitStatus status = VisitStatus.SCHEDULED;
+
 
     /**
      * Creates a new instance of Visit for the current date
@@ -109,6 +113,17 @@ public class Visit extends BaseEntity {
      */
     public void setPet(Pet pet) {
         this.pet = pet;
+    }
+
+    public VisitStatus getStatus() {
+        return this.status;
+    }
+
+    /**
+     * A null status (absent in the request) falls back to {@link VisitStatus#SCHEDULED}.
+     */
+    public void setStatus(VisitStatus status) {
+        this.status = status == null ? VisitStatus.SCHEDULED : status;
     }
 
 }

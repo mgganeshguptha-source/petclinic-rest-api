@@ -24,3 +24,10 @@ springboot-petclinic-server/
 
 # newman reports
 ./src/test/postman/reports/
+
+# --- SDLC-Harness: harness working files (added by the harness) ---
+.harness/*
+!.harness/config.yaml
+audit/
+metrics/
+# --- end SDLC-Harness ---

@@ -2279,8 +2279,19 @@ components:
           minLength: 1
           maxLength: 255
           example: 'rabies shot'
+        status:
+          $ref: '#/components/schemas/VisitStatus'
       required:
         - description
+    VisitStatus:
+      title: Visit status
+      description: The status of a vet visit.
+      type: string
+      enum:
+        - SCHEDULED
+        - COMPLETED
+        - CANCELLED
+      example: SCHEDULED
     Visit:
       title: Visit
       description: A booking for a vet visit.
