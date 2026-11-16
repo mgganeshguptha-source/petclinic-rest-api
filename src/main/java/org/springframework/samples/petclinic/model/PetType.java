@@ -26,4 +26,10 @@ import jakarta.persistence.Table;
 @Table(name = "types")
 public class PetType extends NamedEntity {
 
+    // HARNESS TEST PC-202: deliberate compile error, so that the baseline build
+    // check halts the run before any AI phase. Never merge this branch.
+    public int deliberateCompileErrorForHarnessTest() {
+        return "this is not an int";
+    }
+
 }
