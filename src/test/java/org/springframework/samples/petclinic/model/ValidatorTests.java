@@ -58,4 +58,12 @@ class ValidatorTests {
         assertThat(violation.getMessage()).isEqualTo("must not be null");
     }
 
+    // HARNESS TEST PC-203: this test fails on purpose, so that the baseline
+    // build check records it as "already failing" and the run continues.
+    // Never merge this branch.
+    @Test
+    void deliberatelyFailingForHarnessBaselineTest() {
+        assertThat(1).isEqualTo(2);
+    }
+
 }
