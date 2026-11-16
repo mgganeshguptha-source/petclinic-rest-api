@@ -1,0 +1,34 @@
+{
+  "feature": "PC-202",
+  "run_id": "43818292105",
+  "run_label": "PC-202-mgganeshguptha-source-20261116-014018EST",
+  "status": "halted",
+  "mode": "build",
+  "analysis_doc": null,
+  "retain_audit_branch": true,
+  "completed_phases": [],
+  "total_tokens": {
+    "input": 0,
+    "output": 0,
+    "cache_read": 0,
+    "cache_write": 0,
+    "premium_cost": null,
+    "nano_aiu": null
+  },
+  "total_tokens_all_runs": {},
+  "phase_token_log": [],
+  "actor": "mgganeshguptha-source",
+  "sdk_usage": {
+    "total_premium_cost": null,
+    "total_nano_aiu": null,
+    "model_usage": {},
+    "reported_by": null
+  },
+  "cost_source": {
+    "method": "sdk",
+    "is_estimate": false,
+    "basis": "Copilot SDK session.usage.getMetrics, one session per phase attempt, summed for the run; per-call assistant.usage events as fallback.",
+    "units": "premium-request cost (multipliers applied) and nano-AI units, as reported by the SDK. Not converted to AI credits or dollars: GitHub documents no conversion.",
+    "caveat": "SDK usage APIs are experimental in the pinned SDK version. Reconcile with the organization billing report before quoting a cost."
+  }
+}

@@ -1,0 +1,36 @@
+command: mvn -U -T 1C -s $MAVEN_SETTINGS -e test
+exit_code: 1
+summary: BUILD FAILURE
+
+--- tail ---
+--- MAVEN ERRORS ---
+[ERROR] COMPILATION ERROR : 
+[ERROR] /home/runner/work/petclinic-rest-api/petclinic-rest-api/service/src/main/java/org/springframework/samples/petclinic/model/PetType.java:[32,16] incompatible types: java.lang.String cannot be converted to int
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (default-compile) on project spring-petclinic-rest: Compilation failure
+
+--- OUTPUT TAIL ---
+    at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo (DefaultBuildPluginManager.java:126)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2 (MojoExecutor.java:328)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute (MojoExecutor.java:316)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:212)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:174)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.access$000 (MojoExecutor.java:75)
+    at org.apache.maven.lifecycle.internal.MojoExecutor$1.run (MojoExecutor.java:162)
+    at org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute (DefaultMojosExecutionStrategy.java:39)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:159)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:105)
+    at org.apache.maven.lifecycle.internal.builder.multithreaded.MultiThreadedBuilder$1.call (MultiThreadedBuilder.java:193)
+    at org.apache.maven.lifecycle.internal.builder.multithreaded.MultiThreadedBuilder$1.call (MultiThreadedBuilder.java:180)
+    at java.util.concurrent.FutureTask.run (FutureTask.java:264)
+    at java.util.concurrent.Executors$RunnableAdapter.call (Executors.java:539)
+    at java.util.concurrent.FutureTask.run (FutureTask.java:264)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker (ThreadPoolExecutor.java:1136)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run (ThreadPoolExecutor.java:635)
+    at java.lang.Thread.run (Thread.java:840)
+[ERROR] 
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] hxxp://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+Picked up JAVA_TOOL_OPTIONS: -XX:+IgnoreUnrecognizedVMOptions
