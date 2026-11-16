@@ -1,6 +1,6 @@
-# Caller workflow — petclinic-rest-api (personal test repo, backend / Maven).
-# Lives on the default branch (main). Engine, toolkit: personal repos.
-# No library store: normal online build from Maven Central.
+# BCBSM caller workflow — the same file for backend (Maven) and frontend
+# (Angular) service repos. Inputs marked * on the form are mandatory. Copy to .github/workflows/SDLC-Harness.yml on the
+# service repo's default branch (master).
 name: SDLC-Harness
 
 on:
@@ -14,6 +14,17 @@ on:
         description: "Story branch: the harness reads the story, config and code from it and opens its PR into it *"
         required: true
         type: string
+      mode:
+        description: "build = make the change and open a code PR. analysis = bug-fix analysis only: opens a PR with one root-cause and impact document for review, no code change."
+        # After the analysis PR is reviewed and merged into the story branch,
+        # run again with mode: build and the same feature_id and base to make
+        # the fix. A resume keeps the mode the run was started in.
+        required: true
+        default: build
+        type: choice
+        options:
+          - build
+          - analysis
       resume:
         description: "Continue a halted run from harness-wip/<feature_id>. Use this after answering clarification questions too: the story is re-read from the story branch."
         # NOTE: a resume reads .harness/config.yaml from harness-wip/<feature_id>,
@@ -22,17 +33,6 @@ on:
         required: false
         default: false
         type: boolean
-      # Contract-only mode — hidden from the form for now (under review).
-#      contract_only:
-#        description: "Contract only: publish this repo's contract files (OpenAPI file / src/app/store/) from contract_branch to harness-metrics. No AI, no code, no PR. base = the branch that change was made against."
-#        required: false
-#        default: false
-#        type: boolean
-#      contract_branch:
-#        description: "Contract only: branch holding the finished change (e.g. the approved harness PR branch)."
-#        required: false
-#        default: ""
-#        type: string
       confirm_no_phi:
         description: "I confirm the story and all attachments contain no real PII or PHI (mocked test data only). Required — the harness will not start without it. *"
         # Shown as a checkbox, unticked by default. Must be ticked on EVERY run,
@@ -43,34 +43,6 @@ on:
         required: true
         default: false
         type: boolean
-#      start_phase:
-#        description: "Resume only — phase to re-enter at. Blank = where it halted."
-#        required: false
-#        default: ""
-#        type: choice
-#        options:
-#          - ""
-#          - repo_instructions
-#          - context
-#          - design
-#          - prompt_steps
-#          - coding
-#          - code_review
-#          - unit_testing
-#          - validation
-#          - documentation
-#          - raise_pr
-
-# The reusable engine workflow pushes branches and opens a PR, and makes Copilot
-# model calls. A reusable workflow can NEVER hold more permission than its
-# caller, so every permission the engine needs must be granted here:
-#   contents / pull-requests  -> branches and the PR
-#   copilot-requests          -> lets the built-in Actions token pay for Copilot
-#                                model calls, billed to the organization. Without
-#                                this line the engine job has it set to none and
-#                                the Actions-token route cannot work, whatever the
-#                                engine declares. It is unnecessary only if you
-#                                supply COPILOT_MODEL_TOKEN instead.
 permissions:
   contents: write
   pull-requests: write
@@ -97,23 +69,23 @@ jobs:
       java-version: "17"     # used by backend (Maven) repos; harmless for frontend
       python-version: "3.13"
       node-version: "22"   # Node 20 is deprecated on GitHub runners
+      mode: ${{ inputs.mode }}
       resume: ${{ inputs.resume }}
       confirm_no_phi: ${{ inputs.confirm_no_phi }}
-#      contract_only: ${{ inputs.contract_only }}      # hidden — see the inputs above
-#      contract_branch: ${{ inputs.contract_branch }}
-#      start_phase: ${{ inputs.start_phase }}
       # Engine + toolkit locations. engine_repo / engine_ref MUST match the
       # repo and @ref in `uses:` above — they are the engine code the job checks
       # out and runs.
       engine_repo: mgganeshguptha-source/SDLC-Harness
       engine_ref: v1
       toolkit_repo: mgganeshguptha-source/copilot-toolkit
-      # Toolkit's default branch (personal toolkit uses 'main').
+      # Toolkit's default branch. All BCBSM repos use 'master' (no 'main').
       toolkit_ref: main
+      # DEPRECATED: set runs_build in .harness/config.yaml instead; that value
+      # wins. This input is only used when config.yaml does not set it.
       # Harness builds the code, runs unit tests + the coverage gate after
       # unit_testing (loops back on red / low coverage). false = skip; the
       # developer builds and tests locally before approving the PR.
-      runs_build: true
+      # runs_build: true
       # Git library store, for runners that cannot reach the company artifact
       # repository. Internal libraries come from the store's repository folders
       # (e.g. bcbsm-libs/, Maven layout); public libraries come from Maven
@@ -126,9 +98,8 @@ jobs:
       # then repeat on each downloaded POM for its <parent> and dependencies.
       # Frontend (npm) repos: the store is not used for npm packages; leaving it
       # set is harmless (it only prepares Maven), or set it to "" for those repos.
-      # Blank here: GitHub runners reach Maven Central directly, and $MAVEN_SETTINGS
-      # is then NOT set — so test/coverage commands in config.yaml must not use -s.
-      maven_libs_repo: ""
+      maven_libs_repo: mgganeshguptha-source/maven-libs
+      # Branch of the store. Engine default is main; BCBSM's store uses main.
       maven_libs_ref: main
       # Toolkit proposals: when a story's answers show a toolkit skill or
       # instruction should change, raise it as a PR on toolkit_repo for the
