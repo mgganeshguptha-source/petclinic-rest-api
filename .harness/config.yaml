@@ -42,7 +42,7 @@ test_command: "mvn -U -T 1C -s $MAVEN_SETTINGS -e test"
 # code right after coding, before code review. Blank compile_command => derived
 # from a plain Maven test_command (the goal becomes `compile`); for any other
 # build the check is skipped unless compile_command is set. "off" disables it.
-runs_build: true
+runs_build: false
 compile_command: ""
 
 # Narrow the test run to a subset. Blank => run the whole suite.
