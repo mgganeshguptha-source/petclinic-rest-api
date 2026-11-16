@@ -1,0 +1,21 @@
+{
+  "base_branch": "story/PC-203",
+  "base_commit": "d15a37e0d2b8a78580b82dc9d34e0298cbb7771b",
+  "baseline_schema": 1,
+  "checked_at": "2026-11-16T07:03:40Z",
+  "detail": "[INFO] \n[INFO] Results:\n[INFO] \n[ERROR] Failures: \n[ERROR]   ValidatorTests.deliberatelyFailingForHarnessBaselineTest:66 \nexpected: 2\n but was: 1\n[INFO] \n[ERROR] Tests run: 245, Failures: 1, Errors: 0, Skipped: 0\n[INFO] \n[ERROR] There are test failures.\n\nSee /home/runner/work/petclinic-rest-api/petclinic-rest-api/service/target/surefire-reports for the individual test results.\nSee dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  44.437 s (Wall Clock)\n[INFO] Finished at: 2026-11-16T07:03:40Z\n[INFO] ------------------------------------------------------------------------\n\nPicked up JAVA_TOOL_OPTIONS: -XX:+IgnoreUnrecognizedVMOptions\nPicked up JAVA_TOOL_OPTIONS: -XX:+IgnoreUnrecognizedVMOptions\nOpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended\n--> newPetAsJSON={\"name\":\"Rosy\",\"birthDate\":\"2026-11-16\",\"type\":{\"name\":\"dog\",\"id\":2},\"id\":999,\"visits\":[],\"ownerId\":null}",
+  "env_hint": "",
+  "env_reason": null,
+  "exit_code": 0,
+  "failing_tests": [
+    "org.springframework.samples.petclinic.model.ValidatorTests#deliberatelyFailingForHarnessBaselineTest"
+  ],
+  "first_run_id": "43820951981",
+  "record_type": "baseline",
+  "repo": "mgganeshguptha-source/petclinic-rest-api",
+  "status": "tolerated",
+  "store_commit": "efdbf6a0a6eea4c9a67c263f181ff3ea875fa628",
+  "summary": "BUILD OK \u2014 1 test(s) fail on the base code",
+  "test_command": "mvn -U -T 1C -s $MAVEN_SETTINGS -e test",
+  "tests_seen": 245
+}

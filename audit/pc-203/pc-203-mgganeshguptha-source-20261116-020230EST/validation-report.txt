@@ -1,0 +1,31 @@
+command: mvn -U -T 1C -s $MAVEN_SETTINGS -e test
+exit_code: 0
+summary: BUILD SUCCESS (1 test(s) already failing on the base ignored)
+coverage: changed-class LINE coverage 96.7% (>= 90.0%)
+
+--- tail ---
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   ValidatorTests.deliberatelyFailingForHarnessBaselineTest:66 
+expected: 2
+ but was: 1
+[INFO] 
+[ERROR] Tests run: 254, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[ERROR] There are test failures.
+
+See /home/runner/work/petclinic-rest-api/petclinic-rest-api/service/target/surefire-reports for the individual test results.
+See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  25.475 s (Wall Clock)
+[INFO] Finished at: 2026-11-16T07:08:18Z
+[INFO] ------------------------------------------------------------------------
+
+Picked up JAVA_TOOL_OPTIONS: -XX:+IgnoreUnrecognizedVMOptions
+Picked up JAVA_TOOL_OPTIONS: -XX:+IgnoreUnrecognizedVMOptions
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+--> newPetAsJSON={"name":"Rosy","birthDate":"2026-11-16","type":{"name":"dog","id":2},"id":999,"visits":[],"ownerId":null}

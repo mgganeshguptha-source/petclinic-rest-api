@@ -1,0 +1,647 @@
+{
+  "feature_id": "pc-203",
+  "story": "Title: Trim spaces around a pet type name\n\nStory: As a clinic administrator, I want spaces before and after a pet type name to be removed when I add or rename a pet type, so that the list does not show the same type twice with different spacing.\n\n**Requires a new or changed contract from:** None\n\nExpected behaviour:\n- When a pet type is added (`POST /api/pettypes`), spaces at the start and end of `name` are removed before it is saved. The response returns the trimmed name.\n- When a pet type is renamed (`PUT /api/pettypes/{petTypeId}`), spaces at the start and end of `name` are removed before it is saved.\n- Spaces inside a name are kept (`\"guinea pig\"` stays `\"guinea pig\"`).\n- A name with no spaces around it is saved exactly as sent.\n- A `null` name is handled exactly as it is today. This story adds no new validation and no new error responses.\n- The API contract (`src/main/resources/openapi.yml`) does not change.\n\nAcceptance criteria:\n- AC1: `POST /api/pettypes` with `\"name\": \"  hamster  \"` returns 201 and the returned pet type has `\"name\": \"hamster\"`.\n- AC2: `PUT /api/pettypes/{petTypeId}` with `\"name\": \"  dog \"` returns 204 and the pet type is saved with the name `\"dog\"`.\n- AC3: `POST /api/pettypes` with `\"name\": \"guinea pig\"` returns 201 and the returned name is `\"guinea pig\"`.\n- AC4: The existing pet type controller tests still pass, with new tests for AC1 to AC3.\n\nIn scope:\n- `src/main/java/org/springframework/samples/petclinic/rest/controller/v1/PetTypeRestControllerV1.java` (the add and update methods).\n- Tests in `src/test/java/org/springframework/samples/petclinic/rest/controller/PetTypeRestControllerV1Tests.java`.\n\nOut of scope: `openapi.yml`, the model and repository classes, the database schemas, every other controller, the Angular front end.",
+  "current_phase": "raise_pr",
+  "status": "done",
+  "mode": "build",
+  "analysis_doc": null,
+  "story_path": "stories/PC-203.md",
+  "story_sha256": "be5d46916485e0297a1835d08c73a2a105e32c7a4a77cb98f3b13ab918fe2b40",
+  "attachments": [],
+  "input_guard": {
+    "ok": true,
+    "confirm_no_phi": true,
+    "pii_scan": true,
+    "findings": 0,
+    "finding_types": [],
+    "attachments": 0,
+    "phase": "raise_pr",
+    "actor": "mgganeshguptha-source"
+  },
+  "dependencies": {
+    "line": "none",
+    "repos": [],
+    "contracts": [],
+    "warnings": 0,
+    "ok": true
+  },
+  "contract_output": {
+    "status": "none",
+    "files": [],
+    "skipped": [],
+    "summary": null,
+    "changed_contract_files": []
+  },
+  "reference_repos": [],
+  "clarification_log": [],
+  "completed_phases": [
+    "repo_instructions",
+    "context",
+    "design",
+    "prompt_steps",
+    "coding",
+    "code_review",
+    "unit_testing",
+    "validation",
+    "documentation",
+    "raise_pr"
+  ],
+  "approvals": {
+    "context": "approved",
+    "prompt_steps": "approved",
+    "coding": "approved",
+    "documentation": "approved"
+  },
+  "last_feedback": null,
+  "iterations": {
+    "__runs__:repo_instructions": 1,
+    "repo_instructions": 1,
+    "__runs__:context": 1,
+    "context": 1,
+    "__runs__:design": 1,
+    "__runs__:prompt_steps": 1,
+    "prompt_steps": 1,
+    "__runs__:coding": 1,
+    "coding": 1,
+    "__runs__:code_review": 1,
+    "code_review": 1,
+    "__runs__:unit_testing": 1,
+    "unit_testing": 1,
+    "__runs__:validation": 1,
+    "validation": 1,
+    "__runs__:documentation": 1,
+    "documentation": 1,
+    "__runs__:raise_pr": 1,
+    "raise_pr": 1
+  },
+  "validation_attempts": 0,
+  "coverage_attempts": 0,
+  "changed_main_files": [
+    "src/main/java/org/springframework/samples/petclinic/rest/controller/v1/PetTypeRestControllerV1.java"
+  ],
+  "halt_gate": null,
+  "halt_detail": null,
+  "phase_durations": {
+    "repo_instructions": 44.5,
+    "context": 116.3,
+    "prompt_steps": 33.8,
+    "coding": 18.0,
+    "code_review": 8.0,
+    "unit_testing": 24.9,
+    "validation": 56.4,
+    "documentation": 12.6,
+    "raise_pr": 7.9
+  },
+  "started_at": "2026-11-16T07:02:54Z",
+  "actor": "mgganeshguptha-source",
+  "credits_actual": null,
+  "denied_writes": [],
+  "last_validation_loopback": "",
+  "contract_snapshot": {},
+  "baseline": {
+    "status": "tolerated",
+    "failing_tests": [
+      "org.springframework.samples.petclinic.model.ValidatorTests#deliberatelyFailingForHarnessBaselineTest"
+    ],
+    "tests_seen": 245,
+    "base_commit": "d15a37e0d2b8a78580b82dc9d34e0298cbb7771b",
+    "store_commit": "efdbf6a0a6eea4c9a67c263f181ff3ea875fa628",
+    "checked_at": "2026-11-16T07:03:40Z",
+    "reused": false,
+    "still_failing": [
+      "org.springframework.samples.petclinic.model.ValidatorTests#deliberatelyFailingForHarnessBaselineTest"
+    ]
+  },
+  "ac_attempts": 0,
+  "review_attempts": 0,
+  "scope_attempts": 0,
+  "compile_attempts": 0,
+  "fix_loop": "",
+  "total_tokens": {
+    "input": 3041467,
+    "output": 40742,
+    "cache_read": 2518850,
+    "cache_write": 522498,
+    "reasoning": 14949
+  },
+  "phase_token_log": [
+    {
+      "phase": "repo_instructions",
+      "run_id": "43820951981",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 509348,
+      "cumulative_tokens": 509348,
+      "input_tokens": 500720,
+      "output_tokens": 8628,
+      "cached_tokens": 436147,
+      "cache_write_tokens": 64553,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "glob",
+        "view",
+        "grep",
+        "create",
+        "edit"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 1674659500.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 9,
+          "premium_cost": 1.0,
+          "nano_aiu": 1674659500.0,
+          "input": 500720,
+          "output": 8628,
+          "cache_read": 436147,
+          "reasoning": 2366
+        }
+      }
+    },
+    {
+      "phase": "context",
+      "run_id": "43820951981",
+      "model": "gpt-6-luna",
+      "phase_tokens": 680954,
+      "cumulative_tokens": 1190302,
+      "input_tokens": 672417,
+      "output_tokens": 8537,
+      "cached_tokens": 594117,
+      "cache_write_tokens": 78273,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "glob",
+        "view",
+        "rg",
+        "apply_patch"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 1999649500.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "gpt-6-luna"
+      ],
+      "model_breakdown": {
+        "gpt-6-luna": {
+          "requests": 9,
+          "premium_cost": 1.0,
+          "nano_aiu": 1999649500.0,
+          "input": 672417,
+          "output": 8537,
+          "cache_read": 594117,
+          "reasoning": 5892
+        }
+      }
+    },
+    {
+      "phase": "prompt_steps",
+      "run_id": "43820951981",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 502371,
+      "cumulative_tokens": 1692673,
+      "input_tokens": 495595,
+      "output_tokens": 6776,
+      "cached_tokens": 415750,
+      "cache_write_tokens": 79831,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "bash",
+        "glob",
+        "view",
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 1752577500.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 6,
+          "premium_cost": 1.0,
+          "nano_aiu": 1752577500.0,
+          "input": 495595,
+          "output": 6776,
+          "cache_read": 415750,
+          "reasoning": 883
+        }
+      }
+    },
+    {
+      "phase": "coding",
+      "run_id": "43820951981",
+      "model": "gpt-6-luna",
+      "phase_tokens": 179403,
+      "cumulative_tokens": 1872076,
+      "input_tokens": 178296,
+      "output_tokens": 1107,
+      "cached_tokens": 137277,
+      "cache_write_tokens": 41007,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "view",
+        "bash",
+        "apply_patch"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 705334500.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "gpt-6-luna"
+      ],
+      "model_breakdown": {
+        "gpt-6-luna": {
+          "requests": 4,
+          "premium_cost": 1.0,
+          "nano_aiu": 705334500.0,
+          "input": 178296,
+          "output": 1107,
+          "cache_read": 137277,
+          "reasoning": 506
+        }
+      }
+    },
+    {
+      "phase": "code_review",
+      "run_id": "43820951981",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 146521,
+      "cumulative_tokens": 2018597,
+      "input_tokens": 145459,
+      "output_tokens": 1062,
+      "cached_tokens": 83936,
+      "cache_write_tokens": 61517,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 906058500.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 2,
+          "premium_cost": 1.0,
+          "nano_aiu": 906058500.0,
+          "input": 145459,
+          "output": 1062,
+          "cache_read": 83936,
+          "reasoning": 461
+        }
+      }
+    },
+    {
+      "phase": "unit_testing",
+      "run_id": "43820951981",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 128389,
+      "cumulative_tokens": 2146986,
+      "input_tokens": 122543,
+      "output_tokens": 5846,
+      "cached_tokens": 70099,
+      "cache_write_tokens": 52438,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "create",
+        "bash"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 1017934000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 2,
+          "premium_cost": 1.0,
+          "nano_aiu": 1017934000.0,
+          "input": 122543,
+          "output": 5846,
+          "cache_read": 70099,
+          "reasoning": 2714
+        }
+      }
+    },
+    {
+      "phase": "validation",
+      "run_id": "43820951981",
+      "model": "claude-sonnet-5",
+      "phase_tokens": 676853,
+      "cumulative_tokens": 2823839,
+      "input_tokens": 671482,
+      "output_tokens": 5371,
+      "cached_tokens": 589506,
+      "cache_write_tokens": 81958,
+      "est_credits": 33.55632,
+      "est_usd": 0.3355632,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "view",
+        "bash",
+        "glob",
+        "grep",
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 37654220000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-sonnet-5"
+      ],
+      "model_breakdown": {
+        "claude-sonnet-5": {
+          "requests": 9,
+          "premium_cost": 1.0,
+          "nano_aiu": 37654220000.0,
+          "input": 671482,
+          "output": 5371,
+          "cache_read": 589506,
+          "reasoning": 1311
+        }
+      }
+    },
+    {
+      "phase": "documentation",
+      "run_id": "43820951981",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 175653,
+      "cumulative_tokens": 2999492,
+      "input_tokens": 173498,
+      "output_tokens": 2155,
+      "cached_tokens": 140201,
+      "cache_write_tokens": 33287,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "glob",
+        "grep",
+        "view",
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 664138500.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 4,
+          "premium_cost": 1.0,
+          "nano_aiu": 664138500.0,
+          "input": 173498,
+          "output": 2155,
+          "cache_read": 140201,
+          "reasoning": 548
+        }
+      }
+    },
+    {
+      "phase": "raise_pr",
+      "run_id": "43820951981",
+      "model": "claude-haiku-5.5",
+      "phase_tokens": 82717,
+      "cumulative_tokens": 3082209,
+      "input_tokens": 81457,
+      "output_tokens": 1260,
+      "cached_tokens": 51817,
+      "cache_write_tokens": 29634,
+      "est_credits": null,
+      "est_usd": null,
+      "included": false,
+      "partial": false,
+      "skills_loaded": [],
+      "tools_invoked": [
+        "create"
+      ],
+      "premium_cost": 1.0,
+      "nano_aiu": 485302000.0,
+      "cost_source": "session_metrics",
+      "models_used": [
+        "claude-haiku-5.5"
+      ],
+      "model_breakdown": {
+        "claude-haiku-5.5": {
+          "requests": 2,
+          "premium_cost": 1.0,
+          "nano_aiu": 485302000.0,
+          "input": 81457,
+          "output": 1260,
+          "cache_read": 51817,
+          "reasoning": 268
+        }
+      }
+    }
+  ],
+  "phase_model_log": [
+    {
+      "phase": "repo_instructions",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "context",
+      "model": "gpt-6-luna"
+    },
+    {
+      "phase": "prompt_steps",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "coding",
+      "model": "gpt-6-luna"
+    },
+    {
+      "phase": "code_review",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "unit_testing",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "validation",
+      "model": "claude-sonnet-5"
+    },
+    {
+      "phase": "documentation",
+      "model": "claude-haiku-5.5"
+    },
+    {
+      "phase": "raise_pr",
+      "model": "claude-haiku-5.5"
+    }
+  ],
+  "phase_credit_log": [
+    {
+      "phase": "repo_instructions",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 1674659500.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "context",
+      "model": "gpt-6-luna",
+      "configured_model": "gpt-6-luna",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 1999649500.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "prompt_steps",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 1752577500.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "coding",
+      "model": "gpt-6-luna",
+      "configured_model": "gpt-6-luna",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 705334500.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "code_review",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 906058500.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "unit_testing",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 1017934000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "validation",
+      "model": "claude-sonnet-5",
+      "configured_model": "claude-sonnet-5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 37654220000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "documentation",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 664138500.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    },
+    {
+      "phase": "raise_pr",
+      "model": "claude-haiku-5.5",
+      "configured_model": "claude-haiku-5.5",
+      "credits": null,
+      "before": null,
+      "after": null,
+      "premium_cost": 1.0,
+      "nano_aiu": 485302000.0,
+      "credit_source": "sdk",
+      "is_estimate": false
+    }
+  ],
+  "total_premium_cost": 9.0,
+  "total_nano_aiu": 46859874000.0,
+  "model_usage": {
+    "claude-haiku-5.5": {
+      "requests": 25,
+      "input": 1519272,
+      "output": 25727,
+      "premium_cost": 6.0,
+      "nano_aiu": 6500670000.0
+    },
+    "gpt-6-luna": {
+      "requests": 13,
+      "input": 850713,
+      "output": 9644,
+      "premium_cost": 2.0,
+      "nano_aiu": 2704984000.0
+    },
+    "claude-sonnet-5": {
+      "requests": 9,
+      "input": 671482,
+      "output": 5371,
+      "premium_cost": 1.0,
+      "nano_aiu": 37654220000.0
+    }
+  },
+  "cost_source": "session_metrics"
+}
